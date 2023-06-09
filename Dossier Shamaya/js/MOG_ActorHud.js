@@ -632,6 +632,7 @@ Game_System.prototype.initialize = function() {
 	this._ahud_smartFade = String(Moghunter.ahud_smartFade) === "true" ? true : false;
 	this._ahud_autoFade = String(Moghunter.ahud_autoFade) === "true" ? true : false;
 	this._ahud_opacity = 0;
+	this._iconWeatherToShow = "";
 };
 
 //=============================================================================
@@ -816,6 +817,7 @@ Actor_Hud.prototype.base_parameter_clear = function() {
 	 this._old_caracname = "";
 	 this._old_carx = 0;
 	 this._old_cary = 0;
+	 this._old_weather = "";
 };
 
 //==============================
@@ -898,6 +900,7 @@ Actor_Hud.prototype.create_sprites = function() {
     this.create_Timetext();
 	this.create_Jobtext();
 	this.create_Caracnametext();
+	this.create_iconMeteo();
 };
 
 //==============================
@@ -915,6 +918,7 @@ Actor_Hud.prototype.update_sprites = function() {
 	this.update_Timetext();
 	this.update_Jobtext();
 	this.update_Caracnametext();
+	this.update_iconMeteo();
 };
 
 //==============================
@@ -1060,7 +1064,10 @@ Actor_Hud.prototype.need_refresh_parameter = function(parameter) {
 		break;
 	case 10:
 		if (this._old_cary != $gamePlayer._realY){return true};
-		break;			
+		break;
+	case 11:
+		if (this._old_weather != $gameVariables.value(25) ){return true};
+		break;
   };
   return false;
 };
@@ -1566,13 +1573,56 @@ Actor_Hud.prototype.need_refresh_states = function() {
 //==============================
 //* Create Date Time and Meteo informations
 //==============================
+ImageManager.loadIconMeteo = function(filename) {
+    return this.loadBitmap('icon/', filename, 0, true);
+};
+
+
+
+//==============================
+// * Create Icon Meteo
+//==============================
+Actor_Hud.prototype.create_iconMeteo = function() {
+	this.removeChild(this._iconMeteo);
+	iconWeatherToShow = $gameVariables.value(25);
+	this._iconMeteo = [0,0,0];
+	this._iconMeteo = new Sprite(ImageManager.loadIconMeteo(iconWeatherToShow));
+	this._iconMeteo.x = Graphics.boxWidth - 50
+	this._iconMeteo.y = 17;
+	this._iconMeteo.visible = true;
+	this.addChild(this._iconMeteo);
+    this.update_iconMeteo();};
+
+//==============================
+// * Update Icon Meteo
+//==============================
+Actor_Hud.prototype.update_iconMeteo = function() {
+	if (!this._iconMeteo) {return};
+	if (!this._iconMeteo.bitmap.isReady()) {return};
+	if (this.need_refresh_parameter(11)) {
+		this._old_weather = $gameVariables.value(25)
+		this.refresh_iconMeteo();
+	};
+
+};
+
+//==============================
+// * Refresh Icon Meteo
+//==============================
+Actor_Hud.prototype.refresh_iconMeteo = function() {
+	this.create_iconMeteo()
+};
+
+//==============================
+// * Creat Time Text
+//==============================
 
 Actor_Hud.prototype.create_Timetext = function() {
 	this.removeChild(this._timetext);
 	if (!this._battler) {return};	
 	this._timetext = new Sprite(new Bitmap(300,48));
-	this._timetext.x = (Graphics.boxWidth/2) - 370;
-	this._timetext.y = Graphics.boxHeight - 45;
+	this._timetext.x = Graphics.boxWidth - 320;
+	this._timetext.y = 118;
 	this._timetext.bitmap.fontSize = 16;
 	if (String(Moghunter.ahud_name_font_italic) === "true") {this._name.bitmap.fontItalic = true};
     this._timetext.bitmap.outlineWidth = Number(Moghunter.ahud_name_font_bold_size);
@@ -1582,14 +1632,12 @@ Actor_Hud.prototype.create_Timetext = function() {
 
 Actor_Hud.prototype.refresh_Timetext = function() {
 	this._timetext.bitmap.clear();
-	const day = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
-	const month = ["Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
-	this._timetext.bitmap.drawText(($gameVariables.value(3)+"/"+$gameVariables.value(5)+"/"+$gameVariables.value(6)+" "+$gameVariables.value(2)+":"+$gameVariables.value(1)), 0, 0, this._timetext.bitmap.width, this._timetext.bitmap.height,0);	
+	this._timetext.bitmap.drawText((($gameVariables.value(4)+1)+"/"+($gameVariables.value(5)+1)+"/"+$gameVariables.value(6)+" "+$gameVariables.value(2)+":"+$gameVariables.value(1)), 0, 0, this._timetext.bitmap.width, this._timetext.bitmap.height,"right");	
 };
 
 Actor_Hud.prototype.update_Timetext = function () {
 	if (this.need_refresh_parameter(6)) {
-		this._old_time = $gameVariables.value(3)+"/"+$gameVariables.value(5)+"/"+$gameVariables.value(6)+" "+$gameVariables.value(2)+":"+$gameVariables.value(1);
+		this._old_time = ($gameVariables.value(4)+1)+"/"+($gameVariables.value(5)+1)+"/"+$gameVariables.value(6)+" "+$gameVariables.value(2)+":"+$gameVariables.value(1);
 		this.refresh_Timetext();
 	};
 }

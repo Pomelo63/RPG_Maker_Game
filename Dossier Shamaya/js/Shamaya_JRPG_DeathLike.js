@@ -4,19 +4,13 @@ Game_Battler.prototype.initialize = function () {
     this._HomePointSet = [0,0,0,0];
     this._deadOrAlive="isAlive";
     this._TriggerDeath == "DontneedToBeTrigged"
+    this._RaiseStateChange = '';
 };
 
 Game_Interpreter.prototype.command353 = function() {
     $gamePlayer._opacity = 100;
     $gameActors._data[1]._deadOrAlive="isDead";
-    setTimeout(function(){
-        $gamePlayer.reserveTransfer($gameActors._data[1]._HomePointSet[0],$gameActors._data[1]._HomePointSet[2],$gameActors._data[1]._HomePointSet[3],0,0)
-        $gamePlayer._opacity = 255;
-        Game_Interpreter.prototype.setWaitMode("");
-        $gameActors._data[1]._deadOrAlive="isAlive";
-        $gameActors._data[1]._TriggerDeath ="DontneedToBeTrigged"
-        Game_Interpreter.prototype.command314(0,0)
-     }, 10000);
+    $gameSwitches.setValue(104,true);
     return true;
 };
 
@@ -29,7 +23,10 @@ Game_Event.prototype.isTriggerIn = function(triggers) {
 Scene_Base.prototype.checkGameover = function() {
     if ($gameParty.isAllDead()) {
         if ($gameActors._data[1]._TriggerDeath == "needToBeTrigged")
-        Game_Interpreter.prototype.command353();
+        $gamePlayer._opacity = 100;
+        $gameActors._data[1]._deadOrAlive="isDead";
+        $gameSwitches.setValue(104,true);
+        // Game_Interpreter.prototype.command353();
     }
 };
 
@@ -43,3 +40,14 @@ Game_Party.prototype.isAllDead = function() {
         return false;
     }}
 };
+
+//    $gamePlayer._opacity = 100;
+//$gameActors._data[1]._deadOrAlive="isDead";
+//setTimeout(function(){
+ //   $gamePlayer.reserveTransfer($gameActors._data[1]._HomePointSet[0],$gameActors._data[1]._HomePointSet[2],$gameActors._data[1]._HomePointSet[3],0,0)
+  //  $gamePlayer._opacity = 255;
+  //  Game_Interpreter.prototype.setWaitMode("");
+  //  $gameActors._data[1]._deadOrAlive="isAlive";
+  //  $gameActors._data[1]._TriggerDeath ="DontneedToBeTrigged"
+   // Game_Interpreter.prototype.command314(0,0)
+ // }, 10000);
